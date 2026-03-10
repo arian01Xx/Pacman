@@ -36,6 +36,7 @@ struct World{
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
     };
 
+    int score=0;
     int row=world.size();
     int col=world[0].size(); 
 
@@ -61,16 +62,43 @@ struct World{
     }
 };
 
+struct Enemy{ //4 SERA SU IDENTIDAD
+    std::vector<std::pair<int,int>> coords;
+    enum Color; //azul, rojo, verde, cyan
+    sf::CircleShape enemy;
+
+    Enemy(World& w): used(4, false){
+        Color={cero, uno, dos, tres};
+        coords={{1,6},{1,26},{w.row-4,6},{w.row-4,26}};
+        enemy.setRadius(float(TILE-11));
+    }
+
+    void init(World& w, int& i){
+        //una funcion segun una lista de posiciones disponibles
+        //coords={{1,3},{1,26},{w.row-4,3},{w.row-4,26}};
+        w.world[coords[i].first][coords[i].second]=4;
+    }
+
+    void update(World& w){
+
+    }
+
+    void draw(sf::RenderWindow& window, World& w){
+
+    }
+};
+
 struct User{ //3 serà su identidad
     int x=10, y=15; //posicion antigua que servirà para el frame suave
     int nx, ny;
+    float speed=1.f;
     sf::CircleShape user;
 
     enum Dir{ LEFT, DOWN, RIGHT, UP};
     Dir dir=RIGHT;
 
     User(){
-        user.setRadius(float(TILE-10));
+        user.setRadius(float(TILE-12));
         user.setPosition(sf::Vector2f(TILE*10, TILE*10));
         user.setFillColor(sf::Color::Yellow);
     }
@@ -79,28 +107,27 @@ struct User{ //3 serà su identidad
         w.world[x][y]=3;
     }
 
-    void handleInput(World& w){
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) dir=LEFT;
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) dir=RIGHT;
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) dir=UP;
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) dir=DOWN;
-    }
-
     void update(World& w){
         int dx=0, dy=0;
         
-        if(dir==LEFT) dy=-1;
-        if(dir==RIGHT) dy=1;
-        if(dir==UP) dx=-1;
-        if(dir==DOWN) dx=1;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::A)) dy=-1;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::D)) dy=1;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) dx=-1;
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) dx=1;
 
         nx=x+dx;
         ny=y+dy;
 
         //OBSTACULOS
-        if(nx<=0 || nx>=w.row-1 || ny<=0 || ny>=w.col-1 ||
-           w.world[nx][ny]==1) return;
-        //if()
+        if(nx<0 || nx>w.row-1 || ny<0 || ny>w.col-1 || w.world[nx][ny]==1) return;
+        
+        if(nx==13 && ny>=w.col-1) ny=0;
+        else if(nx==13 && ny==0) ny=w.col-1;
+
+        if(nx==14 && ny>=w.col-1) ny=0;
+        else if(nx==14 && ny==0) ny=w.col-1;
+
+        if(w.world[nx][ny]==2) w.score++;
 
         w.world[x][y]=0;
         w.world[nx][ny]=3; //IDENTIDAD DEL USUARIO 3 
@@ -135,13 +162,19 @@ void execute(){
     World _w;
     Food _f;
     User _u;
+    std::vector<Enemy> enemies;
+
+    for(int i=0; i<4; i++){
+        Enemy e(_w);
+        e.init(_w, i);
+    }
 
     sf::RenderWindow window{
         sf::VideoMode({
                 static_cast<unsigned>(_w.row*TILE),
                 static_cast<unsigned>(_w.col*TILE)
         }),
-        "PACMAN :v but no mmiss pacman :3"
+        "PACMAN"
     };
 
     window.setFramerateLimit(60);
@@ -158,7 +191,6 @@ void execute(){
             if(event->is<sf::Event::Closed>()) window.close(); 
         }
 
-        _u.handleInput(_w);
         float t=clock.restart().asSeconds();
         timer+=t;
 
