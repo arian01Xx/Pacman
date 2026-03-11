@@ -72,6 +72,8 @@ struct Enemy{ //4 SERA SU IDENTIDAD
         coords={{1,6},{1,26},{w.row-4,6},{w.row-4,26}};
         enemy.setRadius(float(TILE-11));
     }
+    //I'M SORRY BABY FOR NOT TO WORKING IN YOU TODAY
+    //I'LL PROMISE TOMORROW WILL BE ALL DAY FOR YOUUU
 
     void init(World& w, int& i){
         //una funcion segun una lista de posiciones disponibles
