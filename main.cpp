@@ -89,10 +89,20 @@ struct Enemy{ //4 SERA SU IDENTIDAD
     void draw(sf::RenderWindow& window, World& w, float alpha){
         if(color==cero){
             enemy.setFillColor(sf::Color::Blue);
-            enemy.setPosition(float(coords[0][1]), float(coords[0][0]));
+            enemy.setPosition({TILE*float(coords[0].second), TILE*float(coords[0].first)});
             window.draw(enemy);
-        }else if(color==one){
-
+        }else if(color==uno){
+            enemy.setFillColor(sf::Color::Red);
+            enemy.setPosition({TILE*float(coords[1].second), TILE*float(coords[1].first)});
+            window.draw(enemy);
+        }else if(color==dos){
+            enemy.setFillColor(sf::Color::Yellow);
+            enemy.setPosition({TILE*float(coords[2].second), TILE*float(coords[2].first)});
+            window.draw(enemy);
+        }else if(color==tres){
+            enemy.setFillColor(sf::Color::Green);
+            enemy.setPosition({TILE*float(coords[3].second), TILE*float(coords[3].first)});
+            window.draw(enemy);
         }
     }
 };
@@ -124,17 +134,21 @@ struct User{ //3 serà su identidad
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W)) dx=-1;
         if(sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S)) dx=1;
 
-        nx=x+dx;
-        ny=y+dy;
+        int tx=x+dx;
+        int ty=y+dy;
 
         //OBSTACULOS
-        if(nx<0 || nx>w.row-1 || ny<0 || ny>w.col-1 || w.world[nx][ny]==1) return;
+        if(tx<0 || tx>w.row-1 || ty<0 || ty>w.col-1 || w.world[tx][ty]==1){
+            nx=x;
+            ny=y;
+            return;
+        }
         
-        if(nx==13 && ny>=w.col-1) ny=0;
-        else if(nx==13 && ny==0) ny=w.col-1;
+        if(tx==13 && ty>=w.col-1) ty=0;
+        else if(tx==13 && ty==0) ty=w.col-1;
 
-        if(nx==14 && ny>=w.col-1) ny=0;
-        else if(nx==14 && ny==0) ny=w.col-1;
+        if(tx==14 && ty>=w.col-1) ty=0;
+        else if(tx==14 && ty==0) ty=w.col-1;
 
         if(w.world[nx][ny]==2) w.score++;
 
@@ -142,6 +156,9 @@ struct User{ //3 serà su identidad
         w.world[nx][ny]=3; //IDENTIDAD DEL USUARIO 3 
 
         //AQUI ACTUALIZAMOS
+        nx=tx;
+        ny=ty;
+        
         x=nx;
         y=ny;
     }
@@ -176,12 +193,13 @@ void execute(){
     for(int i=0; i<4; i++){
         Enemy e(_w);
         e.init(_w, i);
+        enemies.push_back(e);
     }
 
     sf::RenderWindow window{
         sf::VideoMode({
-                static_cast<unsigned>(_w.row*TILE),
-                static_cast<unsigned>(_w.col*TILE)
+                static_cast<unsigned>(_w.col*TILE),
+                static_cast<unsigned>(_w.row*TILE)
         }),
         "PACMAN"
     };
@@ -209,9 +227,10 @@ void execute(){
         }
         float alpha=timer/delay;
 
+        //-------------------------------
         window.clear();
 
-        for(auto i: enemies){
+        for(auto& i: enemies){
             i.draw(window, _w, alpha);
         }
 
@@ -219,6 +238,7 @@ void execute(){
         _u.draw(window, alpha);
 
         window.display();
+        //-------------------------------
     }
 }
 
