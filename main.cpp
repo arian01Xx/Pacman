@@ -64,18 +64,21 @@ struct World{
 
 struct Enemy{ //4 SERA SU IDENTIDAD
     std::vector<std::pair<int,int>> coords;
-    enum Color; //azul, rojo, verde, cyan
+    enum Color {cero, uno, dos, tres}; //azul, rojo, verde, cyan
+    Color color=cero;
     sf::CircleShape enemy;
 
-    Enemy(World& w): used(4, false){
-        Color={cero, uno, dos, tres};
+    Enemy(World& w){ //SINO SE INICIALIZA NADA NO SE DEBE PONER DOS PUNTOS
         coords={{1,6},{1,26},{w.row-4,6},{w.row-4,26}};
         enemy.setRadius(float(TILE-11));
     } 
 
     void init(World& w, int& i){
-        //una funcion segun una lista de posiciones disponibles
-        //coords={{1,3},{1,26},{w.row-4,3},{w.row-4,26}};
+        if(i==0) return;
+        else if(i==1) color=uno;
+        else if(i==2) color=dos;
+        else if(i==3) color=tres;
+
         w.world[coords[i].first][coords[i].second]=4;
     }
 
@@ -83,8 +86,14 @@ struct Enemy{ //4 SERA SU IDENTIDAD
         
     }
 
-    void draw(sf::RenderWindow& window, World& w){
-        
+    void draw(sf::RenderWindow& window, World& w, float alpha){
+        if(color==cero){
+            enemy.setFillColor(sf::Color::Blue);
+            enemy.setPosition(float(coords[0][1]), float(coords[0][0]));
+            window.draw(enemy);
+        }else if(color==one){
+
+        }
     }
 };
 
@@ -201,8 +210,14 @@ void execute(){
         float alpha=timer/delay;
 
         window.clear();
+
+        for(auto i: enemies){
+            i.draw(window, _w, alpha);
+        }
+
         _w.draw(window);
         _u.draw(window, alpha);
+
         window.display();
     }
 }
