@@ -1,6 +1,8 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <utility>
 #include <vector>
+#include <queue>
 
 constexpr int TILE=20;
 
@@ -36,6 +38,8 @@ struct World{
         {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}
     };
 
+    int x_user, y_user; //coordenadas del user
+
     int score=0;
     int row=world.size();
     int col=world[0].size(); 
@@ -62,11 +66,46 @@ struct World{
     }
 };
 
+struct A_Star{ //tenemos que modificar el algoritmo de manera que solo
+               //se dibuje las coordenadas actualizadas, no todos los nodos de busqueda
+
+    struct Node{
+        int x,y;
+        int g, f;
+
+        bool operator<(const Node& other) const{
+            return f>other.f;
+        }
+    };
+
+    std::vector<int> start;
+    std::vector<int> target;
+
+    std::vector<int> dx={-1,1,0,0};
+    std::vector<int> dy={0,0,-1,1};
+
+    std::priority_queue<Node> open;
+
+    bool closed[50][50]={false};
+    int gscore[50][50];
+    std::pair<int,int> parent[50][50];
+
+    bool finished=false;
+
+    void init()
+};
+
 struct Enemy{ //4 SERA SU IDENTIDAD
+              //SE DEBE MOVER EN DIRECCION AL USER
+    A_Star a_star;
+
     std::vector<std::pair<int,int>> coords;
     enum Color {cero, uno, dos, tres}; //azul, rojo, verde, cyan
     Color color=cero;
     sf::CircleShape enemy;
+
+    std::vector<int> start;
+    std::vector<int> target;
 
     Enemy(World& w){ //SINO SE INICIALIZA NADA NO SE DEBE PONER DOS PUNTOS
         coords={{1,6},{1,26},{w.row-4,6},{w.row-4,26}};
@@ -79,11 +118,23 @@ struct Enemy{ //4 SERA SU IDENTIDAD
         else if(i==2) color=dos;
         else if(i==3) color=tres;
 
+        start.push_back(coords[i].first);
+        start.push_back(coords[i].second);
+
         w.world[coords[i].first][coords[i].second]=4;
     }
 
     void update(World& w){
-        
+        target.clear();
+        target.push_back(w.x_user);
+        target.push_back(w.y_user);
+
+        a_star.init(w);
+
+        a_star.start=start;
+        a_star.target=target;
+
+        a_star.update(w);
     }
 
     void draw(sf::RenderWindow& window, World& w, float alpha){
@@ -161,6 +212,9 @@ struct User{ //3 serà su identidad
         
         x=nx;
         y=ny;
+
+        w.x_user=x;
+        w.y_user=y;
     }
 
     void draw(sf::RenderWindow& window, float& alpha){
